@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -160,7 +161,7 @@ func (hc *HAProxyController) createDefaultSSLFile(cache convtypes.Cache) (tlsFil
 
 // OnStartedLeading ...
 // implements LeaderSubscriber
-func (hc *HAProxyController) OnStartedLeading(stop <-chan struct{}) {
+func (hc *HAProxyController) OnStartedLeading(ctx context.Context) {
 }
 
 // OnStoppedLeading ...

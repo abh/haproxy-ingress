@@ -17,12 +17,12 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"os"
 	"time"
 
 	api "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
@@ -37,7 +37,7 @@ type LeaderElector interface {
 
 // LeaderSubscriber ...
 type LeaderSubscriber interface {
-	OnStartedLeading(stop <-chan struct{})
+	OnStartedLeading(ctx context.Context)
 	OnStoppedLeading()
 	OnNewLeader(identity string)
 }
@@ -67,9 +67,9 @@ func NewLeaderElector(id string, logger *logger, cache *cache, subscriber Leader
 		},
 	}
 	callbacks := leaderelection.LeaderCallbacks{
-		OnStartedLeading: func(stop <-chan struct{}) {
+		OnStartedLeading: func(ctx context.Context) {
 			if subscriber != nil {
-				subscriber.OnStartedLeading(stop)
+				subscriber.OnStartedLeading(ctx)
 			}
 		},
 		OnStoppedLeading: func() {
@@ -105,7 +105,5 @@ func (l *leaderelector) IsLeader() bool {
 }
 
 func (l *leaderelector) Run() {
-	go wait.Forever(func() {
-		l.le.Run()
-	}, 0)
+	go l.le.Run(context.Background())
 }
